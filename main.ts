@@ -65,6 +65,8 @@ server.post("/todos", (req: Request, res: Response) => {
 });
 
 
+server.get("/todos", (req: Request, res: Response) => res.send(monTableau));
+
 server.get("/toto", (req, res) => res.send("tototottoo"));
 
 server.listen(3000, () => console.log("Serveur prêt à démarrer"));
