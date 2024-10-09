@@ -1,72 +1,55 @@
-import express, { Express, Request, Response } from "express";
-import cors from "cors";
+import express, { Router, Request, Response } from "express";
+import { query } from "./db";
 
 const server = express();
-server.use(cors());
 server.use(express.json());
-
-interface Todo {
-  id: number;
-  label: string;
-  done: boolean;
-  dueDate?: Date;
-}
-
-const monTableau: Todo[] = [
-  { id: 1, label: "apprendre Vue Js", done: false, dueDate: new Date("2024-12-31") },
-  { id: 2, label: "apprendre à faire des boucles", done: false },
-  { id: 3, label: "apprendre à griller des saucisses", done: true, dueDate: new Date("2024-12-31") },
-];
-
-server.get("/todos/:id", (req: Request, res: Response) => {
-  const id = parseInt(req.params.id, 10);
-  const todo = monTableau.find((t) => t.id === id);
-  if (todo) {
-    res.send(todo);
-  } else {
-    res.status(404).send("Todo not found");
-  }
-});
-
-server.put("/todos/:id", (req: Request, res: Response) => {
-  const id = parseInt(req.params.id, 10);
-  const { label, done, dueDate } = req.body;
-  const todoIndex = monTableau.findIndex((t) => t.id === id);
-  if (todoIndex !== -1) {
-    monTableau[todoIndex] = {
-      ...monTableau[todoIndex],
-      label: label || monTableau[todoIndex].label,
-      done: done !== undefined ? done : monTableau[todoIndex].done,
-      dueDate: dueDate ? new Date(dueDate) : monTableau[todoIndex].dueDate,
-    };
-    res.send(monTableau[todoIndex]);
-  } else {
-    res.status(404).send("Todo not found");
-  }
-});
-
-server.delete("/todos/:id", (req: Request, res: Response) => {
-  const id = parseInt(req.params.id, 10);
-  const todoIndex = monTableau.findIndex((t) => t.id === id);
-  if (todoIndex !== -1) {
-    const deletedTodo = monTableau.splice(todoIndex, 1);
-    res.send(deletedTodo);
-  } else {
-    res.status(404).send("Todo not found");
-  }
-});
-
-server.post("/todos", (req: Request, res: Response) => {
-  const { label, done, dueDate } = req.body;
-  const newId = monTableau.length > 0 ? monTableau[monTableau.length - 1].id + 1 : 1;
-  const newTodo: Todo = { id: newId, label, done, dueDate: dueDate ? new Date(dueDate) : undefined };
-  monTableau.push(newTodo);
-  res.status(201).send(newTodo);
-});
-
-
-server.get("/todos", (req: Request, res: Response) => res.send(monTableau));
-
-server.get("/toto", (req, res) => res.send("tototottoo"));
-
 server.listen(3000, () => console.log("Serveur prêt à démarrer"));
+const router = Router();
+
+// Route pour récupérer tous les utilisateurs
+router.get("/users", async (req: Request, res: Response) => {
+  try {
+    // récupérer tous les utilisateurs du SGBD
+    const users = await query("SELECT * FROM users");
+    res.json(users);
+  } catch (error) {
+    console.error("Erreur :", error);
+    res.status(500).json({ error: "Erreur serveur" });
+  }
+});
+
+server.post("/login", async (req: Request, res: Response) => {
+  const { email, password } = req.body;
+
+  console.log("Requête POST reçue sur /login");
+  console.log("Données reçues :", req.body);
+
+  try {
+    // Requête SQL pour vérifier si l'utilisateur existe et si le mot de passe correspond
+    const result = await query(
+      'SELECT * FROM users WHERE AdresseMailUser = ? AND MdpUser = ?',
+      [email, password]
+    );
+
+    if (result.length > 0) {
+      // Si l'utilisateur est trouvé, répondre avec un succès
+      res.status(200).json({
+        message: "Connexion réussie",
+        user: result[0], // retourner les infos de l'utilisateur
+      });
+    } else {
+      // Sinon, renvoyer une erreur
+      res.status(401).json({
+        message: "Identifiants incorrects",
+      });
+    }
+  } catch (error) {
+    console.error("Erreur lors de l'authentification :", error);
+    res.status(500).json({ error: "Erreur serveur" });
+  }
+
+});
+
+// query('').then(value => console.log(value))
+
+
