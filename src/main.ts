@@ -1,29 +1,29 @@
 import express, { Router, Request, Response, NextFunction } from "express";
 import { query } from "../db";
 import jwt from "jsonwebtoken";
+import dotenv from 'dotenv';
 
-const JWT_SECRET ="Token"
 const server = express();
 server.use(express.json());
 server.listen(3000, () => console.log("Serveur prêt à démarrer"));
 const router = Router();
 
-// Middleware pour vérifier le token JWT
-function authenticateToken(req: Request, res: Response, next: NextFunction) {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
-  if (!token) {
-    return res.status(401).json({ message: "Accès refusé : pas de token" });
-  }
+// // Middleware pour vérifier le token JWT
+// function authenticateToken(req: Request, res: Response, next: NextFunction) {
+//   const authHeader = req.headers['authorization'];
+//   const token = authHeader && authHeader.split(' ')[1];
+//   if (!token) {
+//     return res.status(401).json({ message: "Accès refusé : pas de token" });
+//   }
 
-  jwt.verify(token, JWT_SECRET, (err, decoded) => {
-    if (err) {
-      return res.status(403).json({ message: "Token invalide ou expiré" });
-    }
-    req.body.userId = (decoded as any).userId ; // Ajoute les infos de l'utilisateur à l'objet `req`
-    next(); // Continue vers la route suivante
-  });
-}
+//   jwt.verify(token, JWT_SECRET, (err, decoded) => {
+//     if (err) {
+//       return res.status(403).json({ message: "Token invalide ou expiré" });
+//     }
+//     req.body.userId = (decoded as any).userId ; // Ajoute les infos de l'utilisateur à l'objet `req`
+//     next(); // Continue vers la route suivante
+//   });
+// }
 
 // Route pour récupérer tous les utilisateurs
 server.get("/users", async (req: Request, res: Response) => {
@@ -54,9 +54,11 @@ server.post("/login", async (req: Request, res: Response) => {
 
     if (result.length > 0) {
       const user = result[0];
+      const jwtSecret = process.env.JWT_SECRET;
 
-      const token = jwt.sign({userId: user.IdUser, email:user.AdresseMailUser}, JWT_SECRET,{
-        expiresIn: '1h',
+      const token = jwt.sign({userId: user.IdUser, email:user.AdresseMailUser},
+        jwtSecret,
+        {expiresIn: '1h',
       });
       // Si l'utilisateur est trouvé, répondre avec un succès
       res.status(200).json({
