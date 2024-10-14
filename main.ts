@@ -1,13 +1,12 @@
-import express, { Router, Request, Response } from "express";
+import express, { Request, Response } from "express";
 import { query } from "./db";
 
 const server = express();
 server.use(express.json());
 server.listen(3000, () => console.log("Serveur prêt à démarrer"));
-const router = Router();
 
 // Route pour récupérer tous les utilisateurs
-router.get("/users", async (req: Request, res: Response) => {
+server.get("/users", async (req: Request, res: Response) => {
   try {
     // récupérer tous les utilisateurs du SGBD
     const users = await query("SELECT * FROM users");
