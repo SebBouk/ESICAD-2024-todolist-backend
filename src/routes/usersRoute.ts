@@ -46,11 +46,9 @@ usersRouter.post("/users/add", async (req, res) => {
       [NomUser, PrenomUser, AdresseMailUser, AdminUser, ActifUser]
     );
 
-    if (result && result.length > 0) {
+    if (result && (result as any).insertId) {
       const insertId = (result as any).insertId;
-      res.status(201).json({
-        message: "Utilisateur ajouté avec succès.",
-        userId: insertId,
+      res.status(201).json({message: "Utilisateur ajouté avec succès.", userId: insertId,
       });
     } else {
       res.status(500).json({ error: "Échec de l'ajout de l'utilisateur." });
@@ -62,6 +60,7 @@ usersRouter.post("/users/add", async (req, res) => {
 });
 
 usersRouter.post("/users/save", async (req: Request, res: Response) => {
+  console.log("Données reçues:", req.body);
   const updateUsers: {
     IdUser: number;
     NomUser: string;
@@ -78,6 +77,7 @@ usersRouter.post("/users/save", async (req: Request, res: Response) => {
   }
 
   try {
+    console.log('Mise à jour des utilisateurs :', updateUsers);
     for (const user of updateUsers) {
       if (!user.IdUser) {
         return res.status(400).json({ error: "ID utilisateur manquant" });
