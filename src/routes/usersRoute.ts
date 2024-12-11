@@ -102,4 +102,35 @@ usersRouter.post("/users/save", async (req: Request, res: Response) => {
   }
 });
 
+usersRouter.delete("/users/delete/:id", async (req: Request, res: Response) => {
+  const userId = req.params.id;
+
+  // Validate that the ID is a number
+  if (isNaN(Number(userId))) {
+    return res.status(400).json({ error: "ID utilisateur invalide" });
+  }
+
+  try {
+    // First, check if the user exists
+    const existingUser = await query("SELECT * FROM users WHERE IdUser = ?", [userId]);
+
+    if (existingUser.length === 0) {
+      return res.status(404).json({ error: "Utilisateur non trouvé" });
+    }
+
+    // Perform the deletion
+    const result = await query("DELETE FROM users WHERE IdUser = ?", [userId]);
+
+    // Check if the deletion was successful
+    if (result && (result as any).affectedRows > 0) {
+      res.status(200).json({ message: "Utilisateur supprimé avec succès" });
+    } else {
+      res.status(500).json({ error: "Impossible de supprimer l'utilisateur" });
+    }
+  } catch (error) {
+    console.error("Erreur lors de la suppression de l'utilisateur:", error);
+    res.status(500).json({ error: "Erreur lors de la suppression de l'utilisateur" });
+  }
+});
+
 export default usersRouter;
