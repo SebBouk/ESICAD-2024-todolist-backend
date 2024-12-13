@@ -24,13 +24,13 @@ tachesRouter.post("/tache/add", async (req, res) => {
   const { NomTache, EcheanceTache} =
     req.body;
 console.log(req.body)
-  // Validation simple des données
-
+ 
+  const creationDate = new Date().toISOString().slice(0, 19).replace("T", " ");
   try {
 
     const result = await query(
-      "INSERT INTO tache (NomTache, EcheanceTache) VALUES (?, ?)",
-      [NomTache,EcheanceTache]
+      "INSERT INTO tache (NomTache, EcheanceTache, datecreaTache) VALUES (?, ?,?)",
+      [NomTache,EcheanceTache,creationDate]
     );
 
     if (result && (result as any).insertId) {
@@ -55,6 +55,8 @@ tachesRouter.post("/tache/save", async (req: Request, res: Response) => {
     EtatTache: boolean;
   }[] = req.body;
 
+  const majDate = new Date().toISOString().slice(0, 19).replace("T", " ");
+
   if (!Array.isArray(updateTache)) {
     return res
       .status(400)
@@ -69,12 +71,13 @@ tachesRouter.post("/tache/save", async (req: Request, res: Response) => {
       }
 
       await query(
-        "UPDATE tache SET NomTache = ?, EcheanceTache = ?, EtatTache = ? WHERE IdTache = ?",
+        "UPDATE tache SET NomTache = ?, EcheanceTache = ?, EtatTache = ?, datemajTache = ? WHERE IdTache = ?",
         [
           tache.NomTache,
           tache.EcheanceTache,
           tache.EtatTache,
-          tache.IdTache
+          majDate,
+          tache.IdTache          
         ]
       );
     }
