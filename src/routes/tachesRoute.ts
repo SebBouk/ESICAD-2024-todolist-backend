@@ -15,35 +15,34 @@ tachesRouter.get("/tache/get", async (req: Request, res: Response) => {
   }
 });
 
-tachesRouter.get('/tache/add', (req, res) => {
+tachesRouter.get('/api/admin/tache/add', (req, res) => {
     res.status(405).json({ error: 'Méthode non autorisée.' });
   });
 
+  
 tachesRouter.post("/tache/add", async (req, res) => {
   const { NomTache, EcheanceTache} =
     req.body;
-
+console.log(req.body)
   // Validation simple des données
-  if (!NomTache || !EcheanceTache ) {
-    return res.status(400).json({ error: "Nom et date d'echeance sont requis." });
-  }
+
   try {
 
     const result = await query(
       "INSERT INTO tache (NomTache, EcheanceTache) VALUES (?, ?)",
-      [NomTache, EcheanceTache]
+      [NomTache,EcheanceTache]
     );
 
     if (result && (result as any).insertId) {
       const insertId = (result as any).insertId;
-      res.status(201).json({message: "Utilisateur ajouté avec succès.", userId: insertId,
+      res.status(201).json({message: "Tache ajouté avec succès.", IdTache: insertId,
       });
     } else {
-      res.status(500).json({ error: "Échec de l'ajout de l'utilisateur." });
+      res.status(500).json({ error: "Échec de l'ajout de la tache." });
     }
   } catch (error) {
-    console.error("Erreur lors de l'ajout de l'utilisateur:", error);
-    res.status(500).json({ error: "Erreur lors de l'ajout de l'utilisateur." });
+    console.error("Erreur lors de l'ajout de la tache:", error);
+    res.status(500).json({ error: "Erreur lors de l'ajout de la tache." });
   }
 });
 
