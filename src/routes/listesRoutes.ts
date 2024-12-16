@@ -21,7 +21,7 @@ listeRouter.get('/api/admin/listes/add', (req, res) => {
 
   
 listeRouter.post("/listes/add", async (req, res) => {
-  const { NomListe, listePerso} =
+  const { NomListe, listePerso, IdCategorie} =
     req.body;
 console.log(req.body)
  
@@ -29,8 +29,8 @@ console.log(req.body)
   try {
 
     const result = await query(
-      "INSERT INTO liste (NomListe, datecreaListe, listePerso) VALUES (?,?,?)",
-      [NomListe,creationDate,listePerso]
+      "INSERT INTO liste (NomListe, datecreaListe, listePerso, IdCategorie) VALUES (?,?,?,?)",
+      [NomListe,creationDate,listePerso,IdCategorie]
     );
 
     if (result && (result as any).insertId) {
