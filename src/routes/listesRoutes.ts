@@ -6,7 +6,7 @@ const listeRouter = express();
 listeRouter.get("/listes/get", async (req: Request, res: Response) => {
   try {
     console.log("Récupération des tâches...");
-    const listes = await query("SELECT * FROM liste");
+    const listes = await query("SELECT liste.*, categorie.NomCategorie, categorie.IdCategorie FROM liste LEFT JOIN categorie ON liste.IdCategorie = categorie.IdCategorie;");
     console.log("Listes récupérées:", listes);
     res.json(listes);
   } catch (error) {
@@ -21,7 +21,7 @@ listeRouter.get('/api/admin/listes/add', (req, res) => {
 
   
 listeRouter.post("/listes/add", async (req, res) => {
-  const { NomListe} =
+  const { NomListe, listePerso} =
     req.body;
 console.log(req.body)
  
@@ -29,8 +29,8 @@ console.log(req.body)
   try {
 
     const result = await query(
-      "INSERT INTO liste (NomListe, datecreaListe) VALUES (?,?)",
-      [NomListe,creationDate]
+      "INSERT INTO liste (NomListe, datecreaListe, listePerso) VALUES (?,?,?)",
+      [NomListe,creationDate,listePerso]
     );
 
     if (result && (result as any).insertId) {
@@ -53,7 +53,6 @@ listeRouter.post("/listes/save", async (req: Request, res: Response) => {
     NomListe: string;
     listeArchive: boolean;
   }[] = req.body;
-console.log("qfswdfsq",req.body)
   const majDate = new Date().toISOString().slice(0, 19).replace("T", " ");
 
   if (!Array.isArray(updateListe)) {
