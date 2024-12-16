@@ -88,6 +88,31 @@ tachesRouter.post("/tache/save", async (req: Request, res: Response) => {
   }
 });
 
+tachesRouter.put('/api/taches/:id', async (req, res) => {
+  try {
+    const IdTache = req.params.id;
+    const { NomTache, EcheanceTache, EtatTache } = req.body;
+    
+    await query(`
+      UPDATE tache SET NomTache = ?, EcheanceTache = ?, EtatTache = ?, datemajTache = NOW() WHERE IdTache = ? `, [NomTache, EcheanceTache, EtatTache ? 1 : 0, IdTache]);
+    
+    const [updatedTask] = await query(
+      'SELECT * FROM tache WHERE IdTache = ?',
+      [IdTache]
+    );
+    
+    if (updatedTask.length === 0) {
+      return res.status(404).json({ message: "Tâche non trouvée" });
+    }
+    
+    res.json(updatedTask[0]);
+  } catch (error) {
+    console.error('Erreur lors de la mise à jour de la tâche:', error);
+    res.status(500).json({ error: "Erreur lors de la sauvegarde des données" 
+    });
+  }
+});
+
 tachesRouter.delete("/tache/delete/:id", async (req: Request, res: Response) => {
   const IdTache = req.params.id;
 
