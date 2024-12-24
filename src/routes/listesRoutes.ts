@@ -1,5 +1,22 @@
 import { query } from "../../db";
 import express, { Request, Response } from "express";
+import jwt from "jsonwebtoken"; // Si vous utilisez JWT pour l'authentification
+
+const getUserIdFromToken = (req: Request): number | null => {
+  const token = req.cookies['token']; // Le token est supposé être dans le cookie "token"
+
+  if (!token) {
+    throw new Error("Token non trouvé");
+  }
+
+  try {
+    // Vérifier et décoder le token JWT
+    const decoded: any = jwt.verify(token, process.env.JWT_SECRET!); // Remplacez par votre secret JWT
+    return decoded.IdUser; // Récupérer l'ID utilisateur depuis le payload du token
+  } catch (error) {
+    throw new Error("Token invalide ou expiré");
+  }
+};
 
 const listeRouter = express();
 
@@ -23,14 +40,15 @@ listeRouter.get('/api/admin/listes/add', (req, res) => {
 listeRouter.post("/listes/add", async (req, res) => {
   const { NomListe, listePerso, IdCategorie} =
     req.body;
+    const IdUser = getUserIdFromToken(req);
 console.log(req.body)
  
   const creationDate = new Date().toISOString().slice(0, 19).replace("T", " ");
   try {
 
     const result = await query(
-      "INSERT INTO liste (NomListe, datecreaListe, listePerso, IdCategorie) VALUES (?,?,?,?)",
-      [NomListe,creationDate,listePerso,IdCategorie]
+      "INSERT INTO liste (NomListe, datecreaListe, listePerso, IdCategorie, IdUser_createurListe) VALUES (?,?,?,?,?)",
+      [NomListe,creationDate,listePerso,IdCategorie,IdUser]
     );
 
     if (result && (result as any).insertId) {
@@ -52,8 +70,10 @@ listeRouter.post("/listes/save", async (req: Request, res: Response) => {
     IdListe: number;
     NomListe: string;
     listeArchive: boolean;
+    IdCategorie: number
   }[] = req.body;
   const majDate = new Date().toISOString().slice(0, 19).replace("T", " ");
+  const IdUser = getUserIdFromToken(req);
 
   if (!Array.isArray(updateListe)) {
     return res
@@ -66,15 +86,30 @@ listeRouter.post("/listes/save", async (req: Request, res: Response) => {
     for (const liste of updateListe) {
       if (!liste.IdListe) {
         return res.status(400).json({ error: "ID liste manquant" });
+      };
+
+      const [currentListe] = await query(
+        "SELECT listeArchive, dateArchivage FROM liste WHERE IdListe = ?",
+        [liste.IdListe]
+      );
+
+      if (!currentListe) {
+        return res.status(404).json({ error: "Liste introuvable" });
       }
 
+      // Si la liste est passée de non archivée à archivée, on met à jour la date d'archivage
+      const dateArchivage = (liste.listeArchive && !currentListe.listeArchive) ? majDate : currentListe.dateArchivage;
+
       await query(
-        "UPDATE liste SET NomListe = ?, listeArchive = ?, dateMajListe = ? WHERE IdListe = ?",
+        "UPDATE liste SET NomListe = ?, listeArchive = ?, dateMajListe = ?, IdCategorie = ?, dateArchivage = ?, IdUser_ModifieListe = ?  WHERE IdListe = ?",
         [
           liste.NomListe,
           liste.listeArchive,
           majDate,
-          liste.IdListe         
+          liste.IdCategorie,
+          dateArchivage,
+          IdUser,
+          liste.IdListe
         ]
       );
     }

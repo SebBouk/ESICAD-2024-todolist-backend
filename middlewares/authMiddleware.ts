@@ -16,7 +16,7 @@ export interface CustomRequest extends Request {
       const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as any;
       req.user = {
         IdUser: decoded.IdUser,
-        AdresseMailUser: decoded.AdminUser,
+        AdresseMailUser: decoded.AdresseMailUser,
         AdminUser: decoded.AdminUser,
         ActifUser: decoded.ActifUser
       };
