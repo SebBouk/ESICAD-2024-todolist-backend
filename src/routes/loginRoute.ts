@@ -39,7 +39,8 @@ LoginRouter.post("/login", async (req: Request, res: Response) => {
               AdresseMailUser: user.AdminUser,
               AdminUser: user.AdminUser,
               ActifUser: user.ActifUser,
-              NomUser: user.NomUser
+              NomUser: user.NomUser,
+              PrenomUser: user.PrenomUser
           },
           process.env.JWT_SECRET as string,
           { expiresIn: '1h' }
@@ -53,7 +54,8 @@ LoginRouter.post("/login", async (req: Request, res: Response) => {
           IdUser: user.IdUser,
           AdminUser: user.AdminUser,
           ActifUser: user.ActifUser,
-          NomUser: user.NomUser
+          NomUser: user.NomUser,
+          PrenomUser: user.PrenomUser
       });
 
   } catch (error) {
