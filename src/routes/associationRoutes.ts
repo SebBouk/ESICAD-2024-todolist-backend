@@ -51,4 +51,23 @@ assocRouter.post("/association/add", async (req, res) => {
   }
 });
 
+assocRouter.delete("/association/delete/:IdCategorie/:IdUser", async (req, res) => {
+    try {
+        const { IdCategorie, IdUser } = req.params;
+        const result = await query(
+            "DELETE FROM associer WHERE IdCategorie = ? AND IdUser = ?",
+            [IdCategorie, IdUser]
+          );
+    
+        if (result && (result as any).affectedRows > 0) {
+        res.json({ message: "Association supprimée avec succès." });
+        } else {
+        res.status(404).json({ error: "Association non trouvée." });
+        }
+    } catch (error) {
+        console.error("Erreur lors de la suppression de l'association:", error);
+        res.status(500).json({ error: "Erreur lors de la suppression de l'association." });
+    }
+    });
+
 export default assocRouter;
