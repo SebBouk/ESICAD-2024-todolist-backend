@@ -190,4 +190,34 @@ utilisateurRouter.get("/utilisateur/getListes/:IdCategorie", async (req: Request
     }
   });
 
+  utilisateurRouter.post("/utilisateur/listes/add/:IdCategorie", async (req, res) => {
+    const IdCategorie = req.params.IdCategorie;
+    const { NomListe } =
+      req.body;
+      const IdUser = getUserIdFromToken(req);
+      const listePerso = 0;
+  console.log("body :", req.body)
+  console.log("IdCategorie :", IdCategorie)
+   
+    const creationDate = new Date().toISOString().slice(0, 19).replace("T", " ");
+    try {
+  
+      const result = await query(
+        "INSERT INTO liste (NomListe, datecreaListe, listePerso, IdCategorie, IdUser_createurListe) VALUES (?,?,?,?,?)",
+            [NomListe, creationDate, listePerso, IdCategorie, IdUser]
+      );
+  
+      if (result && (result as any).insertId) {
+        const insertId = (result as any).insertId;
+        res.status(201).json({message: "Liste ajouté avec succès.", IdListe: insertId,
+        });
+      } else {
+        res.status(500).json({ error: "Échec de l'ajout de la liste." });
+      }
+    } catch (error) {
+      console.error("Erreur lors de l'ajout de la liste:", error);
+      res.status(500).json({ error: "Erreur lors de l'ajout de la liste." });
+    }
+  });
+
 export default utilisateurRouter;
