@@ -292,4 +292,26 @@ utilisateurRouter.post("/utilisateur/listesPerso/add/:IdUser", async (req, res) 
   }
 });
 
+utilisateurRouter.get(
+  "/utilisateur/getListeStats/:IdListe",
+  async (req: Request, res: Response) => {
+    try {
+      const IdListe = req.params.IdListe;
+      
+      const stats = await query(`
+        SELECT 
+          COUNT(*) as totalTaches,
+          SUM(CASE WHEN EtatTache = 1 THEN 1 ELSE 0 END) as tachesTerminees
+        FROM tache 
+        WHERE IdListe = ?
+      `, [IdListe]);
+      
+      res.json(stats[0]);
+    } catch (error) {
+      console.error("Erreur :", error);
+      res.status(500).json({ error: "Erreur serveur" });
+    }
+  }
+);
+
 export default utilisateurRouter;
